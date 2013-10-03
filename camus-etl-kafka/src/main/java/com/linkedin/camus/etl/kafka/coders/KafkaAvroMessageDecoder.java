@@ -1,28 +1,32 @@
 package com.linkedin.camus.etl.kafka.coders;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.Properties;
-
-import kafka.message.Message;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.hadoop.io.Text;
+import org.apache.log4j.Logger;
 
 import com.linkedin.camus.coders.CamusWrapper;
 import com.linkedin.camus.coders.MessageDecoder;
 import com.linkedin.camus.coders.MessageDecoderException;
 import com.linkedin.camus.schemaregistry.CachedSchemaRegistry;
 import com.linkedin.camus.schemaregistry.SchemaRegistry;
-import org.apache.hadoop.io.Text;
 
 public class KafkaAvroMessageDecoder extends MessageDecoder<byte[], Record> {
 	protected DecoderFactory decoderFactory;
 	protected SchemaRegistry<Schema> registry;
 	private Schema latestSchema;
+	
+	   private static final Logger sLogger = Logger.getLogger(KafkaAvroMessageDecoder.class);
 	
 	@Override
 	public void init(Properties props, String topicName) {
@@ -85,8 +89,12 @@ public class KafkaAvroMessageDecoder extends MessageDecoder<byte[], Record> {
 
 		private ByteBuffer getByteBuffer(byte[] payload) {
 			ByteBuffer buffer = ByteBuffer.wrap(payload);
-			if (buffer.get() != MAGIC_BYTE)
-				throw new IllegalArgumentException("Unknown magic byte!");
+			byte b=buffer.get();
+			sLogger.warn("first byte: " + b);	
+			sLogger.warn("payload: " + new String(payload));
+			for(int i=0;i<payload.length;i++) 	sLogger.warn("byte " + i +  ": " + payload[i]);
+//			if (buffer.get() != MAGIC_BYTE)
+//				throw new IllegalArgumentException("Unknown magic byte!");
 			return buffer;
 		}
 
@@ -97,9 +105,12 @@ public class KafkaAvroMessageDecoder extends MessageDecoder<byte[], Record> {
 			if (schema == null)
 				throw new IllegalStateException("Unknown schema id: " + id);
 
-			start = buffer.position() + buffer.arrayOffset();
-			length = buffer.limit() - 5;
+//			start = buffer.position() + buffer.arrayOffset();
+//			length = buffer.limit() - 5;
 
+			start = 14;
+			length = buffer.limit() - 14;
+			
 			// try to get a target schema, if any
 			targetSchema = latestSchema;
 			return this;
@@ -108,12 +119,29 @@ public class KafkaAvroMessageDecoder extends MessageDecoder<byte[], Record> {
 
 	public CamusWrapper<Record> decode(byte[] payload) {
 		try {
+			
+
+			
+
+			
 			MessageDecoderHelper helper = new MessageDecoderHelper(registry,
 					topicName, payload).invoke();
 			DatumReader<Record> reader = (helper.getTargetSchema() == null) ? new GenericDatumReader<Record>(
 					helper.getSchema()) : new GenericDatumReader<Record>(
 					helper.getSchema(), helper.getTargetSchema());
 
+					sLogger.warn("targetsch: " + helper.getTargetSchema());
+					sLogger.warn("sch: " + helper.getSchema());
+					
+					sLogger.warn("start: " + helper.getStart());
+					sLogger.warn("length: " + helper.getLength());
+					
+					sLogger.warn("array length: " + helper.getBuffer().array().length);
+					
+					byte[] aux = 	helper.getBuffer().array();
+					for(int i=0;i<aux.length;i++) {
+						sLogger.warn("helper buffer byte: " + i + ": " + aux[i]);
+					}
 			return new CamusAvroWrapper(reader.read(null, decoderFactory
                     .binaryDecoder(helper.getBuffer().array(),
                             helper.getStart(), helper.getLength(), null)));
