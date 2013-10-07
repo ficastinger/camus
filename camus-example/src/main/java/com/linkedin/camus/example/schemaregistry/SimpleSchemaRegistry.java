@@ -2,7 +2,6 @@ package com.linkedin.camus.example.schemaregistry;
 
 import java.util.Properties;
 
-import openbus.schema.ApacheLog;
 
 import org.apache.avro.Schema;
 
