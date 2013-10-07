@@ -14,9 +14,7 @@ public class DummySchemaRegistry extends MemorySchemaRegistry<Schema> {
 //	public DummySchemaRegistry(Configuration conf) {
 	public DummySchemaRegistry() {
 		super();
-		//super.register("test", StringHolder.newBuilder().build().getSchema());
-		super.register("test", (new StringHolder("test")).getSchema());
-		super.register("avrotest", (new StringHolder("test")).getSchema());		
+		super.register("test", (new StringHolder("test")).getSchema());		
 //		super.register("DUMMY_LOG", DummyLog.newBuilder().build().getSchema());
 //		super.register("DUMMY_LOG_2", DummyLog2.newBuilder().build()
 //				.getSchema());
