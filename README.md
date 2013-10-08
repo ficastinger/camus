@@ -2,10 +2,9 @@
 
 This work is for using camus with kafka0.8 and hadoop2.
 
-default decoder in branch camus-kafka-0.8 was not working with following message format
+default decoder in branch camus-kafka-0.8 was not working with following N-bytes message format
 
-The format of an N byte message is the following:
- *
+ 
  * 1. 4 byte CRC32 of the message
  * 2. 1 byte "magic" identifier to allow format changes, value is 2 currently
  * 3. 1 byte "attributes" identifier to allow annotations on the message independent of the version (e.g. compression enabled, type of codec used)
