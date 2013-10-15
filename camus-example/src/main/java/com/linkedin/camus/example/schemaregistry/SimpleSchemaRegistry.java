@@ -2,6 +2,7 @@ package com.linkedin.camus.example.schemaregistry;
 
 import java.util.Properties;
 
+import openbus.schema.ApacheLog;
 
 import org.apache.avro.Schema;
 
@@ -20,8 +21,8 @@ public class SimpleSchemaRegistry implements SchemaRegistry<Schema> {
 	public SimpleSchemaRegistry() {
 
 		//super.register("test", StringHolder.newBuilder().build().getSchema());
-		register("avro", (new StringHolder()).getSchema());
-
+		register("stringHolder", (new StringHolder()).getSchema());
+		register("apacheLog", (new ApacheLog()).getSchema());	
 
 	}
 
@@ -42,16 +43,20 @@ public class SimpleSchemaRegistry implements SchemaRegistry<Schema> {
 	public Schema getSchemaByID(String topic, String id) {
 		// TODO Auto-generated method stub
 		
-		 return (new StringHolder()).getSchema();
-
+		if(topic.startsWith("_1_")) return (new StringHolder()).getSchema();
+		else if(topic.startsWith("_2_")) return (new ApacheLog()).getSchema();
+		else return (new ApacheLog()).getSchema();	
 		
 	}
 
 	@Override
 	public SchemaDetails<Schema> getLatestSchemaByTopic(String topic) {
-		return new SchemaDetails<Schema>(topic, "id",
+		if(topic.startsWith("_1_")) return new SchemaDetails<Schema>(topic, "id",
 				(new StringHolder()).getSchema());
-
+		else if(topic.startsWith("_2_")) return new SchemaDetails<Schema>("topic", "id",
+				(new ApacheLog()).getSchema());
+		else  return new SchemaDetails<Schema>("topic", "id",
+				(new ApacheLog()).getSchema());
 
 	}
 }
